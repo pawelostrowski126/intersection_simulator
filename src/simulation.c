@@ -140,7 +140,7 @@ static void step_update_lights(SimulationState* state) {
                     char bannerMessage[STATUS_MSG_LEN];
                     snprintf(bannerMessage, sizeof(bannerMessage), "EMERGENCY PREEMPTION: Phase %s",
                              config->phases[p].name);
-                    sim_set_banner(state, bannerMessage, 90);
+                    simulation_set_banner(state, bannerMessage, 90);
                 }
                 state->currentPhaseIndex = p;
                 state->currentLightState = config->phases[p];
@@ -232,7 +232,7 @@ static void step_serve_vehicles(SimulationState* state) {
     for (int d = 0; d < DIR_COUNT; d++) {
         const Approach* approach = &state->approaches[d];
         for (int l = 0; l < approach->laneCount; l++) {
-            if(!canGO) {
+            if(!canGO[d][l]) {
                 continue;
             }
 
@@ -380,9 +380,9 @@ bool simulation_reset(SimulationState* state) { // !!!!! CHECK !!!!!
 }
 
 
-bool simulation_step(SimulationState* state) {
+void simulation_step(SimulationState* state) {
     if (state == NULL) {
-        return false;
+        return;
     }
 
     if (state->simulationConfig.maxSteps > 0 && 
@@ -401,17 +401,17 @@ bool simulation_step(SimulationState* state) {
     if (state->simulationConfig.maxSteps > 0 &&
         state->currentStep >= state->simulationConfig.maxSteps) {
         state->executionMode = EXEC_PAUSED;
-        sim_set_banner(state, "Max simulation steps reached.", 120);
+        simulation_set_banner(state, "Max simulation steps reached.", 120);
     }
 
-    return true;
+    return;
 }
 
 
-bool simulation_frame(SimulationState* state) {
+void simulation_frame(SimulationState* state) {
     if (state == NULL) {
-        return false;
+        return;
     }
 
-    return true;
+    return;
 }
