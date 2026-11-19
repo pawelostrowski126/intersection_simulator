@@ -462,6 +462,40 @@ void simulation_frame(SimulationState* state) {
             state->executionMode = EXEC_PAUSED;
         }
     }
+}
 
-    return;
+
+void simulation_adjust_speed(SimulationState* state, int value) {
+    if (state == NULL) {
+        return;
+    }
+
+    int updatedFrames = state->simulationConfig.framesPerStep + value;
+    if (updatedFrames < MIN_FRAMES_PER_STEP) {
+        updatedFrames = MIN_FRAMES_PER_STEP;
+    }
+    else if (updatedFrames > MAX_FRAMES_PER_STEP) {
+        updatedFrames = MAX_FRAMES_PER_STEP;
+    }
+
+    state->simulationConfig.framesPerStep = updatedFrames;
+
+    float updatedSpeed = 1.0f / (float)updatedFrames;
+    for (int i = 0; i < state->activeCrossingCount; i++) {
+        state->crossings[i].speedPerFrame = updatedSpeed;
+    }
+
+    char bannerMessage[STATUS_MSG_LEN];
+    snprintf(bannerMessage, sizeof(bannerMessage), "Speed Updated: %d frames/step!", updatedFrames);
+    simulation_set_banner(state, bannerMessage, 60);
+}
+
+
+void simulation_set_banner(SimulationState* state, const char* message, int durationFrames) {
+    if (state == NULL || message == NULL) {
+        return;
+    }
+
+    snprintf(state->statusBanner, STATUS_MSG_LEN, "%s", message);
+    state->remainingFramesOfStatusBanner = (durationFrames > 0) ? durationFrames : 0;
 }
