@@ -254,6 +254,23 @@ static void step_serve_vehicles(SimulationState* state) {
 }
 
 
+static void update_crossings(SimulationState* state) {
+    int i = 0;
+    while (i < state->activeCrossingCount) {
+        ActiveCrossingVehicle* activeVehicle = &state->crossings[i];
+        activeVehicle->progress += activeVehicle->speedPerFrame;
+
+        if (activeVehicle->progress >= 1.0f) {
+            state->crossings[i] = state->crossings[state->activeCrossingCount -1];
+            state->activeCrossingCount--;
+        }
+        else {
+            i++;
+        }
+    }
+}
+
+
 // MAIN FUNCTIONS
 
 bool simulation_init_default(SimulationState* state) {
@@ -411,6 +428,39 @@ void simulation_step(SimulationState* state) {
 void simulation_frame(SimulationState* state) {
     if (state == NULL) {
         return;
+    }
+
+    if (state->remainingFramesOfStatusBanner > 0) {
+        state->remainingFramesOfStatusBanner--;
+        if (state->remainingFramesOfStatusBanner == 0) {
+            state->statusBanner[0] = '\n';
+        }
+    }
+
+    if (state->executionMode = EXEC_PAUSED) {
+        return;
+    }
+
+    int framesPerStep = state->simulationConfig.framesPerStep;
+    if (framesPerStep < MIN_FRAMES_PER_STEP) {
+        framesPerStep = MIN_FRAMES_PER_STEP;
+    }
+
+    update_crossings(state);
+
+    if (state->frameInStep == 0) {
+        simulation_step(state);
+        if (state->executionMode = EXEC_PAUSED) {
+            return;
+        }
+    }
+
+    state->frameInStep++;
+    if (state->frameInStep >= framesPerStep) {
+        state->frameInStep = 0;
+        if (state->executionMode == EXEC_STEP) {
+            state->executionMode = EXEC_PAUSED;
+        }
     }
 
     return;

@@ -11,8 +11,8 @@
 
 bool simulation_init_default(SimulationState* state);
 bool simulation_reset(SimulationState* state);
-void simulation_step(SimulationState* state);
-void simulation_frame(SimulationState* state);
+void simulation_step(SimulationState* state);   // runs once every framesPerStep frames; discrete traffic logic
+void simulation_frame(SimulationState* state);  // visual frame and input clock
 void simulation_adjust_speed(SimulationState* state, int value);    // negative value slows down the simulation, positive value speeds it up
 void simulation_set_banner(SimulationState* state, const char* message, int durationFrames);
 void simulation_finished(const SimulationState* state);
