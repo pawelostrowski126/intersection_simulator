@@ -499,3 +499,44 @@ void simulation_set_banner(SimulationState* state, const char* message, int dura
     snprintf(state->statusBanner, STATUS_MSG_LEN, "%s", message);
     state->remainingFramesOfStatusBanner = (durationFrames > 0) ? durationFrames : 0;
 }
+
+
+bool simulation_finished(const SimulationState* state) {
+    if (state == NULL) {
+        return false;
+    }
+
+    if (state->simulationConfig.maxSteps > 0 &&
+        state->currentStep >= state->simulationConfig.maxSteps) {
+        return true;
+    }
+
+    if (!state->simulationConfig.rngEnabled &&
+        state->scenarioQueue.nextIndex >= state->scenarioQueue.count &&
+        state->activeCrossingCount == 0) {
+        for (int d = 0; d < DIR_COUNT; d++) {
+            const Approach* approach = &state->approaches[d];
+            for (int l = 0; l < approach->laneCount; l++)  {
+                if (approach->lanes[l].count > 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    return false;
+}
+
+
+double simulation_get_average_wait(const SimulationState* state) {
+    if (state == NULL) {
+        return 0.0;
+    }
+
+    if (state->simulationStatistics.totalVehiclesPassed <= 0) {
+        return 0.0;
+    }
+
+    return (double)state->simulationStatistics.totalWaitingSteps / (double)state->simulationStatistics.totalVehiclesPassed;
+}
